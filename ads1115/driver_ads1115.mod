@@ -1,1 +1,0 @@
-/home/pi/Desktop/HTN/ads1115/driver_ads1115.o

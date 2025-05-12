@@ -89,7 +89,7 @@ static ssize_t ads1115_read(struct file *file, char __user *buf, size_t len, lof
 	u16 check_reg;
 	u8 reg = CONV_REG;;  // Conversion register
 	
-	if ((config[1] & (1<<8)) == 0){ //continue mode
+	if ((config[1] & (1<<0)) == 0){ //continue mode
 			// Gửi địa chỉ thanh ghi Conversion (0x00)
 		ret = i2c_master_send(ads1115_client, &reg, 1);
 		if (ret < 0) {

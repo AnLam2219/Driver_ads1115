@@ -1,1 +1,0 @@
-cmd_/home/pi/Desktop/HTN/ads1115/driver_ads1115.ko := ld -r -EL -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/pi/Desktop/HTN/ads1115/driver_ads1115.ko /home/pi/Desktop/HTN/ads1115/driver_ads1115.o /home/pi/Desktop/HTN/ads1115/driver_ads1115.mod.o;  true
