@@ -1,0 +1,1 @@
+cmd_/home/pi/Desktop/HTN/ads1115/driver_ads1115.mod := printf '%s\n'   driver_ads1115.o | awk '!x[$$0]++ { print("/home/pi/Desktop/HTN/ads1115/"$$0) }' > /home/pi/Desktop/HTN/ads1115/driver_ads1115.mod

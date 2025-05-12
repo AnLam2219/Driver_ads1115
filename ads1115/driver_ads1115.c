@@ -82,6 +82,13 @@ static ssize_t ads1115_read(struct file *file, char __user *buf, size_t len, lof
 {
     char rbuf[32];  // Dữ liệu cần trả về từ kernel
     ssize_t ret;
+	u8 reg_c;
+	u16 value;
+	u8 data[2];
+	s16 adc_value;
+	u16 check_reg;
+	u8 reg = CONV_REG;;  // Conversion register
+	
 	if ((config[1] & (1<<8)) == 0){ //continue mode
 			// Gửi địa chỉ thanh ghi Conversion (0x00)
 		ret = i2c_master_send(ads1115_client, &reg, 1);
@@ -89,37 +96,34 @@ static ssize_t ads1115_read(struct file *file, char __user *buf, size_t len, lof
 			printk(KERN_ERR "Failed to set pointer to conversion register\n");
 			return -EIO;
 		}
-		u8 reg = CONV_REG;  // Conversion register
-		u8 data[2];     // 2 byte đọc từ ADS1115
 		// Đọc 2 byte từ Conversion register
 		ret = i2c_smbus_read_i2c_block_data(ads1115_client, reg, 2,data);
 		if (ret < 0) {
 			printk(KERN_ERR "Failed to read conversion data\n");
 			return -EIO;
 		}
+		printk(KERN_INFO "Continous mode\n");
 	}
-	else if((config[0] & (1<<8)) != 0){ //single mode
+	else {
 		//bật lại bit OS
-		reg = config[0];
+		reg_c = config[0];
 		value = (config[1] << 8) | config[2];
-		ads1115_write_register(ads1115_client,reg,value);
+		ads1115_write_register(ads1115_client,reg_c,value);
 		
 		ret = i2c_master_send(ads1115_client, &reg, 1);
 		if (ret < 0) {
 			printk(KERN_ERR "Failed to set pointer to conversion register\n");
 			return -EIO;
 		}
-		u8 reg = CONV_REG;  // Conversion register
-		u8 data[2];     // 2 byte đọc từ ADS1115
-		
 		// Đọc 2 byte từ Conversion register
 		ret = i2c_smbus_read_i2c_block_data(ads1115_client, reg, 2,data);
 		if (ret < 0) {
 			printk(KERN_ERR "Failed to read conversion data\n");
 			return -EIO;
 		}
+		printk(KERN_INFO "Single mode\n");
 	}
-    s16 adc_value;
+	
 	adc_value = (data[0] << 8) | data[1];
 	memcpy(rbuf, &adc_value, sizeof(adc_value));
     // Nếu user không yêu cầu đọc gì, trả về 0
@@ -133,8 +137,17 @@ static ssize_t ads1115_read(struct file *file, char __user *buf, size_t len, lof
         *offset += strlen(rbuf) + 1;  // Cập nhật offset
         return strlen(rbuf) + 1;  // Trả về số byte đã đọc
     }
-
-    return 0;  // Nếu không có dữ liệu để đọc nữa
+	
+	
+	ret = i2c_smbus_read_i2c_block_data(ads1115_client, CONFIG_REG, 2,data);
+	if (ret < 0) {
+		printk(KERN_ERR "Failed to read conversion data\n");
+		return -EIO;
+	}
+	check_reg = (data[0] << 8) | data[1];
+	printk(KERN_INFO "ads1115: Configuration written: reg=0x%02x val=0x%04x\n", CONFIG_REG, check_reg);
+    
+	return 0;  // Nếu không có dữ liệu để đọc nữa
 }
 
 
