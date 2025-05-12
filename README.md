@@ -1,4 +1,4 @@
-# Báo cáo biết Driver ADS1115 
+# Báo cáo viết Driver ADS1115 
 ## Thành viên nhóm:
 1. Lâm Phước An   - 22146257
 2. Bùi Vạn Văn    - 22146447
