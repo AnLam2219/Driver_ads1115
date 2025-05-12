@@ -7,7 +7,10 @@
 #define ADDRESS 0x48
 #define CONVERT 0x00
 #define CONFIG 0X01
-uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA_RATE, char MODE_COMPARATOR)
+#define LO_THRESH 0x02
+#define HI_THRESH 0x03
+
+uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA_RATE, char MODE_COMPARATOR, uint8_t NUMBER_CONVERSION)
 {
     uint16_t Config =0;
 
@@ -42,9 +45,31 @@ uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA
     uint8_t mode_comparator =0;
     if(MODE_COMPARATOR == 'W') mode_comparator =1; 
 
-    Config |= (1<<15) | (pin<<12) | (pga<<9) | (mode << 8) | (data_rate << 5) | (mode_comparator <<4) ;
-    //|(0b11 <<0);
+    uint8_t number = NUMBER_CONVERSION;
+
+    Config |= (1<<15) | (pin<<12) | (pga<<9) | (mode << 8) | (data_rate << 5) | (mode_comparator <<4); //|(number <<0);
+    printf("%d\n",Config);
     return Config;
+}
+void set_thresh(int fd, float LO, float HI)
+{
+    uint16_t con_fig = wiringPiI2CReadReg16(fd,CONFIG);
+    uint16_t Con_fig = (con_fig<<8) | (con_fig >>8); //đảo lại 
+    float FS;
+    uint16_t v_ss = (Con_fig& 0xE00)>>9; //tách 3 bit 9 10 11
+    if(v_ss == 0) FS =6.144;
+    else if(v_ss ==1) FS =4.096; 
+    else if(v_ss ==2) FS =2.048;
+    else if(v_ss ==3) FS = 1.024;
+    else if(v_ss ==4) FS =0.512;
+    else FS =0.256;
+    uint16_t lo = (int)((LO*32768/FS));
+    uint16_t Lo = (lo<<8)|(lo>>8);
+    uint16_t hi = (int)((HI*32768/FS));
+    uint16_t Hi = (hi<<8)|(hi>>8);
+    printf("%x|%x\n",Lo,Hi);
+    wiringPiI2CWriteReg16(fd,LO_THRESH,Lo);
+    wiringPiI2CWriteReg16(fd,HI_THRESH,Hi);
 }
 int main()
 {
@@ -56,13 +81,14 @@ int main()
     config |= (0b100 << 5);  // Data Rate = 128 SPS
     config |= 0x03;          // Comparator off  */
     //config = 0b1100000010000011;
-    config = ADS1115_init('3','G',6.144,'C',128,'W');
+    config = ADS1115_init('0','G',6.144,'C',128,'W', 0);
     //printf("\t%d\n",config);
 
     uint16_t config_s = (config<<8) | (config>>8);
     wiringPiI2CWriteReg16(ads,CONFIG,config_s);
-    wiringPiI2CWriteReg16(ads,0x03,0x803E); //set giới hạn trên là 3v/6.144
-    wiringPiI2CWriteReg16(ads,0x02,0xB414); //set giới hạn dưới là 1v/6.144
+    //wiringPiI2CWriteReg16(ads,0x03,0x803E); //set giới hạn trên là 3v/6.144
+    //wiringPiI2CWriteReg16(ads,0x02,0xB414); //set giới hạn dưới là 1v/6.144
+    set_thresh(ads,1,3);
     uint16_t config_r = wiringPiI2CReadReg16(ads,CONFIG);
     uint16_t test = (config_r<<8)|(config_r>>8);
     printf("%x\n",test);
