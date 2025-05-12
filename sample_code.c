@@ -57,7 +57,7 @@ int main() {
         return EXIT_FAILURE;
     }
 	// ---------- Gửi cấu hình tới kernel (ví dụ cấu hình ADC mode) ----------
-    int config = ADS1115_init('0','G',4.096,'C',128,'W', 0);
+    int16_t config = ADS1115_init('0','G',4.096,'C',128,'W', 0);
 	int MSB = (config >>8) & 0xff;
 	int LSB = config & 0xff;
 	uint8_t config_bytes[3] = { 0x01, MSB ,LSB };  // Dữ liệu nhị phân
