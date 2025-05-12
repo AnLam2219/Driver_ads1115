@@ -7,7 +7,7 @@
 #define ADDRESS 0x48
 #define CONVERT 0x00
 #define CONFIG 0X01
-uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA_RATE)
+uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA_RATE, char MODE_COMPARATOR)
 {
     uint16_t Config =0;
 
@@ -39,7 +39,10 @@ uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA
     else if(DATA_RATE==250) data_rate=0b101;
     else data_rate = log2(DATA_RATE/8);
 
-    Config |= (1<<15) | (pin<<12) | (pga<<9) | (mode << 8) | (data_rate << 5) ;
+    uint8_t mode_comparator =0;
+    if(MODE_COMPARATOR == 'W') mode_comparator =1; 
+
+    Config |= (1<<15) | (pin<<12) | (pga<<9) | (mode << 8) | (data_rate << 5) | (mode_comparator <<4) ;
     //|(0b11 <<0);
     return Config;
 }
@@ -53,7 +56,7 @@ int main()
     config |= (0b100 << 5);  // Data Rate = 128 SPS
     config |= 0x03;          // Comparator off  */
     //config = 0b1100000010000011;
-    config = ADS1115_init('0','G',6.144,'C',128);
+    config = ADS1115_init('3','G',6.144,'C',128,'W');
     //printf("\t%d\n",config);
 
     uint16_t config_s = (config<<8) | (config>>8);
@@ -80,6 +83,7 @@ int main()
         float V = data*FS/32768.0;
         printf("ADC: %d | V = %.2f V\n", data, V);
         delay(100);
+        //wiringPiI2CWriteReg16(ads,CONFIG,config_s); //set lại bit 1 cho bit OS
     }
     
 }
