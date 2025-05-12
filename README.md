@@ -5,4 +5,4 @@
 3. Phạm Vũ Hưng   - 22146325
 4. Nguyễn An Vương- 22146451
 ## Hướng dẫn sử dụng:
-- Chi tiết nằm trong file manual.txt
+- Chi tiết nằm trong file manual.pdf
