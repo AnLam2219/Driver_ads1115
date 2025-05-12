@@ -5,7 +5,7 @@
 #include <stdint.h>     // uint8_t, int16_t
 #include <string.h>     // memset()
 
-
+#define CONFIG 0X01
 
 uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA_RATE, char MODE_COMPARATOR, uint8_t NUMBER_CONVERSION)
 {
@@ -60,7 +60,7 @@ int main() {
     uint16_t config = ADS1115_init('0','G',6.144,'C',128);
 	int MSB = (config >>8) & 0xff;
 	int LSB = config & 0xff;
-	uint8_t config_bytes[3] = { 0x01, MSB ,LSB };  // Dữ liệu nhị phân
+	uint8_t config_bytes[3] = { CONFIG, MSB ,LSB };  // Dữ liệu nhị phân
     ssize_t wret = write(fd, config_bytes, sizeof(config_bytes));
     if (wret < 0) {
         perror("Failed to write to /dev/ads1115_driver");
