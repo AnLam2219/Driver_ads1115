@@ -5,7 +5,7 @@
 #include <stdint.h>     // uint8_t, int16_t
 #include <string.h>     // memset()
 
-#define CONFIG 0X01
+
 
 uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA_RATE, char MODE_COMPARATOR, uint8_t NUMBER_CONVERSION)
 {
@@ -60,7 +60,7 @@ int main() {
     uint16_t config = ADS1115_init('0','G',6.144,'C',128);
 	int MSB = (config >>8) & 0xff;
 	int LSB = config & 0xff;
-	uint8_t config_bytes[3] = { CONFIG, MSB ,LSB };  // Dữ liệu nhị phân
+	uint8_t config_bytes[3] = { 0x01, MSB ,LSB };  // Dữ liệu nhị phân
     ssize_t wret = write(fd, config_bytes, sizeof(config_bytes));
     if (wret < 0) {
         perror("Failed to write to /dev/ads1115_driver");
@@ -69,6 +69,31 @@ int main() {
     }
 	printf("wret: %d\n",wret);
 	usleep(100000);
+	//-------------thêm các giá trị ngưỡng cảnh báo-------------
+	/*Ngưỡng dưới Lo_Thrserh*/
+	int Lo_thresh_MSB = 0x20;
+	int Lo_thresh_LSB = 0x00;
+	config_bytes[0] = 0x02;
+	config_bytes[1] = Lo_thresh_MSB;
+	config_bytes[2] = Lo_thresh_LSB;
+	wret = write(fd, config_bytes, sizeof(config_bytes));
+    if (wret < 0) {
+        perror("Failed to write to /dev/ads1115_driver");
+        close(fd);
+        return EXIT_FAILURE;
+    }
+	/*Ngưỡng trên Hi_Thresh*/
+	int Hi_thresh_MSB = 0x7f;
+	int Hi_thresh_LSB = 0x00;
+	config_bytes[0] = 0x03;
+	config_bytes[1] = Hi_thresh_MSB;
+	config_bytes[2] = Hi_thresh_LSB;
+	wret = write(fd, config_bytes, sizeof(config_bytes));
+    if (wret < 0) {
+        perror("Failed to write to /dev/ads1115_driver");
+        close(fd);
+        return EXIT_FAILURE;
+    }
     // ---------- Đọc giá trị ADC từ kernel ----------
     int32_t adc_value = 0;
     ssize_t rret = read(fd, &adc_value, sizeof(adc_value));
