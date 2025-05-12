@@ -4,7 +4,7 @@
 #include <unistd.h>     // read(), write(), close()
 #include <stdint.h>     // uint8_t, int16_t
 #include <string.h>     // memset()
-
+#include <math.h>
 
 
 uint16_t ADS1115_init(char PIN_P,char PIN_N, float PGA, char MODE, uint16_t DATA_RATE, char MODE_COMPARATOR, uint8_t NUMBER_CONVERSION)
@@ -57,7 +57,7 @@ int main() {
         return EXIT_FAILURE;
     }
 	// ---------- Gửi cấu hình tới kernel (ví dụ cấu hình ADC mode) ----------
-    uint16_t config = ADS1115_init('0','G',6.144,'C',128);
+    int config = ADS1115_init('0','G',4.096,'C',128,'W', 0);
 	int MSB = (config >>8) & 0xff;
 	int LSB = config & 0xff;
 	uint8_t config_bytes[3] = { 0x01, MSB ,LSB };  // Dữ liệu nhị phân
@@ -103,7 +103,9 @@ int main() {
         return EXIT_FAILURE;
     }
 	printf("Raw ADC Value: %d\n", adc_value);
-	
+	uint16_t test = config & 0xff|(config >>8) & 0xff;
+    printf("%x\n",test);
+    usleep(8000);
 	// Chuyển sang điện áp theo code mẫu sau hoặc có thể truyền theo datasheet
 	float FSR;
     uint16_t v_ss = (test& 0xE00)>>9; //tách 3 bit 9 10 11
@@ -113,11 +115,9 @@ int main() {
     else if(v_ss ==2) FSR =2.048;
     else if(v_ss ==3) FSR = 1.024;
     else if(v_ss ==4) FSR =0.512;
-    else FS =0.256;
+    else FSR =0.256;
     float voltage = adc_value*1.0/32768.0*FSR;
     printf("Voltage: %.4f V\n", voltage);
-	
-	
 	
 	close(fd);
 	return 0;
