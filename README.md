@@ -6,3 +6,4 @@
 4. Nguyễn An Vương- 22146451
 ## Hướng dẫn sử dụng:
 - Chi tiết nằm trong file manual.pdf
+- Code mẫu nằm ở file Samplecode.c
