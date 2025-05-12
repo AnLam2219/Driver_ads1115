@@ -244,6 +244,6 @@ static void __exit ads1115_exit(void)
 module_init(ads1115_init);
 module_exit(ads1115_exit);
 
-MODULE_AUTHOR("Your Name");
+MODULE_AUTHOR("HVVA");
 MODULE_DESCRIPTION("ADS1115 I2C Client Driver");
 MODULE_LICENSE("GPL");
